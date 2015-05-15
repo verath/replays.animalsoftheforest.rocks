@@ -1,0 +1,19 @@
+{
+  "name": "replays.animalsoftheforest.rocks",
+  "version": "1.0.0",
+  "description": "Website for replays.animalsoftheforest.rocks",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/verath/replays.animalsoftheforest.rocks.git"
+  },
+  "author": "Peter Eliasson <warackta@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/verath/replays.animalsoftheforest.rocks/issues"
+  },
+  "homepage": "https://github.com/verath/replays.animalsoftheforest.rocks"
+}
