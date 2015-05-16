@@ -7,7 +7,6 @@
   },
   "main": "app.js",
   "scripts": {
-    "postinstall": "grunt",
     "start": "cd dist && node app.js"
   },
   "repository": {

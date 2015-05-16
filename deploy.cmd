@@ -106,6 +106,14 @@ IF EXIST "%DEPLOYMENT_TARGET%\package.json" (
   popd
 )
 
+:: 4. Run grunt
+IF EXIST "%DEPLOYMENT_TARGET%\Gruntfile.js" (
+  pushd "%DEPLOYMENT_TARGET%"
+  call :ExecuteCmd .\node_modules\.bin\grunt --no-color
+  IF !ERRORLEVEL! NEQ 0 goto error
+  popd
+)
+
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 :: Post deployment stub
