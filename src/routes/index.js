@@ -10,11 +10,12 @@ router.get('/', (req, res) => {
     res.render('index', viewData);
 });
 
-router.get('/home', AuthHelper.ensureAuthenticated, (req, res) => {
+router.get('/home', AuthHelper.ensureAuthenticated(), (req, res) => {
     const viewData = {user: req.user};
     res.render('home', viewData);
 });
 
 router.use('/auth', require('./auth'));
+router.use('/admin', require('./admin'));
 
 module.exports = router;

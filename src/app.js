@@ -1,3 +1,5 @@
+require("babel/polyfill");
+
 const express = require('express');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
@@ -13,9 +15,7 @@ let tableService = azureStorage.createTableService();
 let userService = new UserService(tableService);
 
 // Setup passport
-PassportInitializer.initialize(passport, (req, identifier, profile, done) =>
-    userService.validate(identifier, profile, done));
-
+PassportInitializer.initialize(passport, userService);
 
 var app = express();
 
