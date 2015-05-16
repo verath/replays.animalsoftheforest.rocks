@@ -1,3 +1,8 @@
+dist
+
+*-compiled.js
+*-compiled.js.map
+
 # Logs
 logs
 *.log

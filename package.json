@@ -4,7 +4,8 @@
   "description": "Website for replays.animalsoftheforest.rocks",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "postinstall": "gulp",
+    "start": "cd dist && node app.js"
   },
   "repository": {
     "type": "git",
@@ -15,5 +16,19 @@
   "bugs": {
     "url": "https://github.com/verath/replays.animalsoftheforest.rocks/issues"
   },
-  "homepage": "https://github.com/verath/replays.animalsoftheforest.rocks"
+  "homepage": "https://github.com/verath/replays.animalsoftheforest.rocks",
+  "dependencies": {
+    "azure-storage": "^0.4.4",
+    "bluebird": "^2.9.25",
+    "connect-flash": "^0.1.1",
+    "express": "^4.12.3",
+    "express-handlebars": "^2.0.1",
+    "express-session": "^1.11.2",
+    "passport": "^0.2.1",
+    "passport-steam": "^0.1.5"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0"
+  }
 }
