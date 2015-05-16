@@ -41,7 +41,10 @@ var AuthHelper = (function () {
 
             return function (req, res, next) {
                 if (req.isAuthenticated()) {
-                    var permissionLevel = req.user.permissionLevel || -1;
+                    /** @type User */
+                    var user = req["user"];
+
+                    var permissionLevel = user.permissionLevel || -1;
                     if (permissionLevel < requiredPermissionLevel) {
                         req.flash("error", "Permission denied!");
                     } else {

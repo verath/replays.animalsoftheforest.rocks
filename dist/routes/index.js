@@ -13,7 +13,9 @@ router.get('/', function (req, res) {
 });
 
 router.get('/home', AuthHelper.ensureAuthenticated(), function (req, res) {
-    var viewData = { user: req.user };
+    /** @type User */
+    var user = req['user'];
+    var viewData = { userId: user.id };
     res.render('home', viewData);
 });
 

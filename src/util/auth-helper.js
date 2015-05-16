@@ -24,7 +24,10 @@ class AuthHelper {
 
         return (req, res, next) => {
             if (req.isAuthenticated()) {
-                const permissionLevel = req.user.permissionLevel || -1;
+                /** @type User */
+                const user = req['user'];
+
+                const permissionLevel = user.permissionLevel || -1;
                 if (permissionLevel < requiredPermissionLevel) {
                     req.flash("error", "Permission denied!");
                 } else {

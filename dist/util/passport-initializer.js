@@ -16,12 +16,8 @@ var PassportInitializer = (function () {
     _createClass(PassportInitializer, null, [{
         key: 'initialize',
         value: function initialize(passport, userService) {
-            passport.serializeUser(function (user, done) {
-                return done(null, user);
-            });
-            passport.deserializeUser(function (obj, done) {
-                return done(null, obj);
-            });
+            passport.serializeUser(userService.serializeUser.bind(userService));
+            passport.deserializeUser(userService.deserializeUser.bind(userService));
 
             passport.use(new SteamStrategy({
                 profile: false,

@@ -4,8 +4,8 @@ const constants = require('../config/constants');
 
 class PassportInitializer {
     static initialize(passport, userService) {
-        passport.serializeUser((user, done) => done(null, user));
-        passport.deserializeUser((obj, done) => done(null, obj));
+        passport.serializeUser(userService.serializeUser.bind(userService));
+        passport.deserializeUser(userService.deserializeUser.bind(userService));
 
         passport.use(new SteamStrategy({
                 profile: false,
