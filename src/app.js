@@ -20,7 +20,13 @@ PassportInitializer.initialize(passport, userService);
 var app = express();
 
 // View engine
-app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+const viewDir = __dirname + '/views/';
+app.set('views', viewDir);
+app.engine('handlebars', exphbs({
+    defaultLayout: 'main',
+    layoutsDir: viewDir + 'layouts/',
+    partialsDir: viewDir + 'partials/'
+}));
 app.set('view engine', 'handlebars');
 
 // Global middleware
