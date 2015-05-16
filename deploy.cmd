@@ -48,16 +48,6 @@ IF NOT DEFINED KUDU_SYNC_CMD (
   SET KUDU_SYNC_CMD=%appdata%\npm\kuduSync.cmd
 )
 
-IF NOT DEFINED GULP_CMD (
-  :: Install gulp
-  echo Installing Gulp
-  call npm --registry "http://registry.npmjs.org/" install gulp -g --silent
-  IF !ERRORLEVEL! NEQ 0 goto error
-
-  :: Locally just running "gulp" would also work
-  SET GULP_CMD="%appdata%\npm\gulp.cmd"
-)
-
 goto Deployment
 
 :: Utility Functions
@@ -120,7 +110,7 @@ IF EXIST "%DEPLOYMENT_TARGET%\package.json" (
 echo "Execute Gulp"
 IF EXIST "%DEPLOYMENT_TARGET%\gulpfile.js" (
   pushd "%DEPLOYMENT_TARGET%"
-  call :ExecuteCmd !GULP_CMD!
+  call .\node_modules\.bin\gulp build
   IF !ERRORLEVEL! NEQ 0 goto error
   popd
 )
