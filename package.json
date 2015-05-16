@@ -29,9 +29,7 @@
     "express-handlebars": "^2.0.1",
     "express-session": "^1.11.2",
     "passport": "^0.2.1",
-    "passport-steam": "^0.1.5"
-  },
-  "devDependencies": {
+    "passport-steam": "^0.1.5",
     "gulp": "^3.8.11",
     "gulp-babel": "^5.1.0"
   }
