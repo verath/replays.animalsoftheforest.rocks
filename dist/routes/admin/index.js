@@ -1,18 +1,18 @@
 'use strict';
 
 var express = require('express');
-var passport = require('passport');
+var auth = require('../../middleware/authorization');
 
-var AuthHelper = require('../../util/auth-helper');
+module.exports = function (passport) {
+    var router = express.Router();
 
-var router = express.Router();
+    // Must be admin for all these routes
+    router.use(auth.is.admin);
 
-// Must be admin for all these routes
-router.use(AuthHelper.ensureAuthenticated(AuthHelper.PERMISSIONS_ADMIN));
+    router.get('/', function (req, res) {
+        var viewData = {};
+        res.render('admin/index', viewData);
+    });
 
-router.get('/', function (req, res) {
-    var viewData = {};
-    res.render('admin/index', viewData);
-});
-
-module.exports = router;
+    return router;
+};

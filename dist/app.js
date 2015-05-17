@@ -2,75 +2,42 @@
 
 require('babel/polyfill');
 
+var fs = require('fs');
+var mongoose = require('mongoose');
 var express = require('express');
-var exphbs = require('express-handlebars');
-var session = require('express-session');
-var flash = require('connect-flash');
 var passport = require('passport');
-var azureStorage = require('azure-storage');
 
 var constants = require('./config/constants');
-var PassportInitializer = require('./util/passport-initializer');
-var UserService = require('./services/user-service');
 
-var tableService = azureStorage.createTableService();
-var userService = new UserService(tableService);
-
-// Setup passport
-PassportInitializer.initialize(passport, userService);
-
+// Create the express app
 var app = express();
 
-// View engine
-var viewDir = __dirname + '/views/';
-app.set('views', viewDir);
-app.engine('handlebars', exphbs({
-    defaultLayout: 'main',
-    layoutsDir: viewDir + 'layouts/',
-    partialsDir: viewDir + 'partials/'
-}));
-app.set('view engine', 'handlebars');
+// Connect to mongodb
+var connect = function connect() {
+    var options = { server: { socketOptions: { keepAlive: 1 } } };
+    mongoose.connect(constants.MONGODB_CONNECTION_STRING, options);
+};
+connect();
 
-// Global middleware
-app.use(session({
-    secret: constants.COOKIE_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    // TODO: should be set to https only
-    cookie: { secure: false }
-}));
-app.use(flash());
-app.use(passport.initialize());
-app.use(passport.session());
+// Mongodb error handling
+mongoose.connection.on('error', console.log.bind(console));
+mongoose.connection.on('disconnected', connect);
 
-// Routes
-app.use('/', require('./routes'));
-
-// 404 handler
-app.use(function (req, res, next) {
-    res.status(404);
-
-    var preferredContentType = req.accepts(['json', 'html']);
-    if (req.xhr || preferredContentType === 'json') {
-        res.send({ error: 'Not found' });
-    } else {
-        res.render('errors/404', { url: req.url });
+// Setup mongoose models
+fs.readdirSync(__dirname + '/models').forEach(function (file) {
+    if (file.indexOf('.js') > -1) {
+        require(__dirname + '/models/' + file);
     }
 });
 
-// Error handler
-app.use(function (err, req, res, next) {
-    res.status(err.status || 500);
+// Passport config
+require('./config/passport')(passport);
 
-    console.error('Caught an error in global error handler!');
-    console.error(err);
+// Express application config
+require('./config/express')(app, passport);
 
-    var preferredContentType = req.accepts(['json', 'html']);
-    if (req.xhr || preferredContentType === 'json') {
-        res.status(500).send({ error: 'Uh Oh, something gone wrong!' });
-    } else {
-        res.render('errors/500', { error: err });
-    }
-});
+// Route config
+var routes = require('./routes')(passport);
+app.use('/', routes);
 
 app.listen(constants.PORT);

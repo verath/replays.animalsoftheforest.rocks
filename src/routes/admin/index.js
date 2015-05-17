@@ -1,16 +1,16 @@
 const express = require('express');
-const passport = require('passport');
+const auth = require('../../middleware/authorization');
 
-const AuthHelper = require('../../util/auth-helper');
+module.exports = (passport) => {
+    const router = express.Router();
 
-const router = express.Router();
+    // Must be admin for all these routes
+    router.use(auth.is.admin);
 
-// Must be admin for all these routes
-router.use(AuthHelper.ensureAuthenticated(AuthHelper.PERMISSIONS_ADMIN));
+    router.get('/', (req, res) => {
+        const viewData = {};
+        res.render('admin/index', viewData);
+    });
 
-router.get('/', (req, res) => {
-    const viewData = {};
-    res.render('admin/index', viewData);
-});
-
-module.exports = router;
+    return router
+};

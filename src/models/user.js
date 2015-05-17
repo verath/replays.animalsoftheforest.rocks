@@ -1,34 +1,17 @@
-/**
- * A wrapper around a user table entity, providing more sensible names
- */
-class User {
-    constructor(userEntity) {
-        this._entity = userEntity;
-    }
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-    /**
-     * Getter for the underlying entity this model is for.
-     * @returns {*} The entity for this user
-     */
-    get entity() {
-        return this._entity;
-    }
+const userSchema = new Schema({
+    access_level: {type: Number, "default": 0},
+    steam_id: {type: String, required: true},
+    steam_persona_name: String,
+    steam_profile_url: String,
+    steam_avatar: String,
+    steam_avatar_medium: String,
+    steam_avatar_full: String,
+    steam_real_name: String
+});
 
-    /**
-     * Returns the Id for this user.
-     * @returns {String} The id for this user. This is the same as the 64-bit SteamId.
-     */
-    get id() {
-        return this._entity.RowKey['_'];
-    }
-
-    /**
-     * Returns this user's permission level.
-     * @returns {Number} The user's permission level.
-     */
-    get permissionLevel() {
-        return this._entity.PermissionLevel['_'];
-    }
-}
+const User = mongoose.model('User', userSchema);
 
 module.exports = User;

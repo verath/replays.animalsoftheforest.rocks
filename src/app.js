@@ -1,74 +1,42 @@
 require("babel/polyfill");
 
+const fs = require('fs');
+const mongoose = require('mongoose');
 const express = require('express');
-const exphbs = require('express-handlebars');
-const session = require('express-session');
-const flash = require('connect-flash');
 const passport = require('passport');
-const azureStorage = require('azure-storage');
 
 const constants = require('./config/constants');
-const PassportInitializer = require('./util/passport-initializer');
-const UserService = require('./services/user-service');
 
-let tableService = azureStorage.createTableService();
-let userService = new UserService(tableService);
+// Create the express app
+const app = express();
 
-// Setup passport
-PassportInitializer.initialize(passport, userService);
+// Connect to mongodb
+var connect = function () {
+    var options = {server: {socketOptions: {keepAlive: 1}}};
+    mongoose.connect(constants.MONGODB_CONNECTION_STRING, options);
+};
+connect();
 
-var app = express();
+// Mongodb error handling
+mongoose.connection.on('error', console.log.bind(console));
+mongoose.connection.on('disconnected', connect);
 
-// View engine
-const viewDir = __dirname + '/views/';
-app.set('views', viewDir);
-app.engine('handlebars', exphbs({
-    defaultLayout: 'main',
-    layoutsDir: viewDir + 'layouts/',
-    partialsDir: viewDir + 'partials/'
-}));
-app.set('view engine', 'handlebars');
-
-// Global middleware
-app.use(session({
-    secret: constants.COOKIE_SECRET,
-    resave: false,
-    saveUninitialized: true,
-    // TODO: should be set to https only
-    cookie: {secure: false}
-}));
-app.use(flash());
-app.use(passport.initialize());
-app.use(passport.session());
-
-// Routes
-app.use('/', require('./routes'));
-
-// 404 handler
-app.use((req, res, next) => {
-    res.status(404);
-
-    const preferredContentType = req.accepts(['json', 'html']);
-    if (req.xhr || preferredContentType === 'json') {
-        res.send({error: 'Not found'});
-    } else {
-        res.render('errors/404', {url: req.url});
+// Setup mongoose models
+fs.readdirSync(__dirname + '/models').forEach(function (file) {
+    if (file.indexOf('.js') > -1) {
+        require(__dirname + '/models/' + file);
     }
 });
 
-// Error handler
-app.use(function (err, req, res, next) {
-    res.status(err.status || 500);
 
-    console.error("Caught an error in global error handler!");
-    console.error(err);
+// Passport config
+require('./config/passport')(passport);
 
-    const preferredContentType = req.accepts(['json', 'html']);
-    if (req.xhr || preferredContentType === 'json') {
-        res.status(500).send({error: 'Uh Oh, something gone wrong!'});
-    } else {
-        res.render('errors/500', {error: err});
-    }
-});
+// Express application config
+require('./config/express')(app, passport);
+
+// Route config
+const routes = require('./routes')(passport);
+app.use('/', routes);
 
 app.listen(constants.PORT);
