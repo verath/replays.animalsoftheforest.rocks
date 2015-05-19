@@ -1,1 +1,2 @@
-console.log('test update_players');
+// Run compiled job from dist folder
+console.log(__dirname);
