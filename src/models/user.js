@@ -12,6 +12,6 @@ const userSchema = new Schema({
     steam_real_name: String
 });
 
-const User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = (connection) => {
+    connection.model('User', userSchema);
+};

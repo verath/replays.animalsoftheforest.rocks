@@ -14,6 +14,6 @@ var userSchema = new Schema({
     steam_real_name: String
 });
 
-var User = mongoose.model('User', userSchema);
-
-module.exports = User;
+module.exports = function (connection) {
+    connection.model('User', userSchema);
+};
