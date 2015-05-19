@@ -7,7 +7,7 @@ var request = require("request-promise");
 var constants = require("../../config/constants");
 var JobHelper = require("../job-helper");
 
-var RUN_INTERVAL = 60 * 1000; // Run every 6th hour
+var RUN_INTERVAL = 12 * 60 * 60 * 1000; // Run every 12th hour
 var REQUEST_DELAY = 1000; // Delay between requests to the steam api
 var PLAYER_SUMMARIES_METHOD_URL = "http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/";
 
