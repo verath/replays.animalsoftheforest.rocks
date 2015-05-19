@@ -11,7 +11,12 @@ var redirectToLoginPage = function redirectToLoginPage(req, res) {
 var auth = {
     is: {
         user: function user(req, res, next) {
-            auth.has.access_level(auth.ACCESS_LEVELS.USER)(req, res, next);
+            if (!req.isAuthenticated()) {
+                req.flash("error", "Unauthenticated!");
+                return redirectToLoginPage(req, res);
+            } else {
+                next();
+            }
         },
 
         admin: function admin(req, res, next) {
@@ -36,7 +41,6 @@ var auth = {
         }
     },
     ACCESS_LEVELS: {
-        USER: 1,
         ADMIN: 10
     }
 };
