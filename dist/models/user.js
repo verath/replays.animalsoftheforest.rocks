@@ -1,10 +1,12 @@
-'use strict';
+"use strict";
 
-var mongoose = require('mongoose');
+var mongoose = require("mongoose");
 var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
-    access_level: { type: Number, 'default': 0 },
+    access_level: { type: Number, "default": 0 },
+    latest_match_id: { type: Number, "default": 0 },
+
     steam_id: { type: String, required: true },
     steam_persona_name: String,
     steam_profile_url: String,
@@ -15,5 +17,5 @@ var userSchema = new Schema({
 });
 
 module.exports = function (connection) {
-    connection.model('User', userSchema);
+    connection.model("User", userSchema);
 };

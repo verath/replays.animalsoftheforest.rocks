@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const teamSchema = new Schema({
-    players: [Schema.Types.ObjectId],
     steam_team_id: {type: String, required: true},
     steam_name: String,
     steam_tag: String,

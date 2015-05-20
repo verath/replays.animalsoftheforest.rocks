@@ -92,18 +92,7 @@ function run() {
             }
             team.steam_player_account_ids = steamPlayerAccountIds;
 
-            // Find references for users in this team, if any
-            return Promise.map(steamPlayerAccountIds, function (steamId) {
-                return User.findOne({ steam_id: steamId }).exec();
-            }).then(function (users) {
-                team.players = users.filter(function (user) {
-                    return user != null;
-                }).map(function (user) {
-                    return user._id;
-                });
-            }).then(function () {
-                return team.save();
-            });
+            return team.save();
         }, function (err) {
             console.log("Error fetching data!");
             console.error(err);
