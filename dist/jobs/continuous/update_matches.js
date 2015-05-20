@@ -103,7 +103,7 @@ function run() {
 
     var fetchMatchesForUser = function fetchMatchesForUser(user) {
         var accountId = SteamUtils.steamId64To32(user.steam_id);
-        var latestMatchId = 0; //user.latest_match_id;
+        var latestMatchId = user.latest_match_id;
 
         console.log("Fetching matches for user: " + accountId + ". Latest match id: " + latestMatchId);
 
