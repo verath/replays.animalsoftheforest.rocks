@@ -29,6 +29,22 @@ var JobHelper = (function () {
 
             return connection;
         }
+    }, {
+        key: 'shouldShutdown',
+        value: function shouldShutdown() {
+            // Azure creates a file at "WEBJOBS_SHUTDOWN_FILE" when a job should quit
+            var shutdownPath = process.env['WEBJOBS_SHUTDOWN_FILE'];
+            if (!shutdownPath) {
+                return false;
+            } else {
+                try {
+                    fs.statSync(shutdownPath);
+                    return true;
+                } catch (err) {
+                    return false;
+                }
+            }
+        }
     }]);
 
     return JobHelper;

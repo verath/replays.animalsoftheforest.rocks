@@ -17,6 +17,21 @@ class JobHelper {
 
         return connection;
     }
+
+    static shouldShutdown() {
+        // Azure creates a file at "WEBJOBS_SHUTDOWN_FILE" when a job should quit
+        const shutdownPath = process.env['WEBJOBS_SHUTDOWN_FILE'];
+        if (!shutdownPath) {
+            return false;
+        } else {
+            try {
+                fs.statSync(shutdownPath);
+                return true;
+            } catch (err) {
+                return false;
+            }
+        }
+    }
 }
 
 module.exports = JobHelper;

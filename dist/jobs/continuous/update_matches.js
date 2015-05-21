@@ -4,6 +4,7 @@ require("babel/polyfill");
 
 var Promise = require("bluebird");
 var request = require("request-promise");
+var requestErrors = require("request-promise/errors");
 var constants = require("../../config/constants");
 var SteamUtils = require("../../utils/steam-utils");
 var JobHelper = require("../job-helper");
@@ -14,6 +15,11 @@ var MATCH_HISTORY_METHOD_URL = "http://api.steampowered.com/IDOTA2Match_570/GetM
 
 function run() {
     console.log("Running update_matches");
+
+    if (JobHelper.shouldShutdown()) {
+        console.log("Detected shutdown request, stopping");
+        return;
+    }
 
     var db = JobHelper.createMongooseConnection();
     var User = db.model("User");
@@ -57,10 +63,10 @@ function run() {
     /**
      * Function for (recursively) fetching match ids for an account until a a match id.
      * @param accountId The account to fetch matches for
-     * @param untilMatchId The match id where to stop fetching.
+     * @param untilMatchSeqNum The match seq num where to stop fetching.
      * @param [startAtId = -1] Match id to start fetching from
      */
-    var fetchMatchesUntilMatchId = function fetchMatchesUntilMatchId(accountId, untilMatchId) {
+    var fetchMatchesUntilMatchSeqNum = function fetchMatchesUntilMatchSeqNum(accountId, untilMatchSeqNum) {
         var startAtId = arguments[2] === undefined ? -1 : arguments[2];
 
         var reqOptions = {
@@ -68,7 +74,8 @@ function run() {
             qs: {
                 key: constants.STEAM_WEB_API_KEY,
                 account_id: accountId,
-                start_at_match_id: startAtId
+                start_at_match_id: startAtId,
+                matches_requested: 10
             },
             json: true
         };
@@ -79,15 +86,17 @@ function run() {
             } else {
                 var _ret2 = (function () {
                     var matches = res["result"]["matches"];
-                    var lastMatchId = matches.slice(-1)[0]["match_id"];
-                    if (lastMatchId <= untilMatchId) {
+                    var lastMatch = matches.slice(-1)[0];
+                    var lastMatchSeqNum = lastMatch["match_seq_num"];
+                    var lastMatchId = lastMatch["match_id"];
+                    if (lastMatchSeqNum <= untilMatchSeqNum) {
                         return {
                             v: matches.filter(function (match) {
-                                return match["match_id"] > untilMatchId;
+                                return match["match_seq_num"] > untilMatchSeqNum;
                             })
                         };
                     } else {
-                        var nextMatchesReq = fetchMatchesUntilMatchId(accountId, untilMatchId, lastMatchId - 1);
+                        var nextMatchesReq = fetchMatchesUntilMatchSeqNum(accountId, untilMatchSeqNum, lastMatchId - 1);
                         return {
                             v: nextMatchesReq.then(function (nextMatches) {
                                 return matches.concat(nextMatches);
@@ -98,25 +107,29 @@ function run() {
 
                 if (typeof _ret2 === "object") return _ret2.v;
             }
+        })["catch"](requestErrors.StatusCodeError, function (err) {
+            throw new Error("Steam API responded with a " + err.statusCode + " error code!");
         }).delay(REQUEST_DELAY);
     };
 
     var fetchMatchesForUser = function fetchMatchesForUser(user) {
         var accountId = SteamUtils.steamId64To32(user.steam_id);
-        var latestMatchId = user.latest_match_id;
+        var userName = user.steam_persona_name;
+        var latestMatchSeqNum = user.latest_match_seq_num;
 
-        console.log("Fetching matches for user: " + accountId + ". Latest match id: " + latestMatchId);
+        console.log("Fetching matches for user: " + userName + " (" + accountId + "). Latest match seqNum: " + latestMatchSeqNum);
 
-        var newestMatchId = latestMatchId;
-        return fetchMatchesUntilMatchId(accountId, latestMatchId).then(function (matches) {
+        var newestMatchSeqNum = latestMatchSeqNum;
+        return fetchMatchesUntilMatchSeqNum(accountId, latestMatchSeqNum).then(function (matches) {
             if (matches.length > 0) {
-                newestMatchId = matches[0]["match_id"];
+                newestMatchSeqNum = matches[0]["match_seq_num"];
+                console.log("Found " + matches.length + " new match(es) for player.");
             }
             return matches;
         }).map(function (matchData) {
             return insertMatchIfNotExist(matchData);
         }).then(function () {
-            user.latest_match_id = newestMatchId;
+            user.latest_match_seq_num = newestMatchSeqNum;
             return user.save();
         });
     };

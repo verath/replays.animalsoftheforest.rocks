@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
     access_level: { type: Number, "default": 0 },
-    latest_match_id: { type: Number, "default": 0 },
+    latest_match_seq_num: { type: Number, "default": 0 },
 
     steam_id: { type: String, required: true },
     steam_persona_name: String,

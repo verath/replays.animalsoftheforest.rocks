@@ -2,6 +2,7 @@ require("babel/polyfill");
 
 const Promise = require("bluebird");
 const request = require('request-promise');
+const requestErrors = require('request-promise/errors');
 const constants = require('../../config/constants');
 const SteamUtils = require('../../utils/steam-utils');
 const JobHelper = require('../job-helper');
@@ -14,6 +15,11 @@ const TEAM_INFO_METHOD_URL = "http://api.steampowered.com/IDOTA2Match_570/GetTea
 
 function run() {
     console.log("Running update_users_and_teams");
+
+    if (JobHelper.shouldShutdown()) {
+        console.log("Detected shutdown request, stopping");
+        return;
+    }
 
     const db = JobHelper.createMongooseConnection();
     const User = db.model('User');
@@ -43,9 +49,8 @@ function run() {
             user.steam_real_name = playerData["realname"];
 
             return user.save();
-        }, (err) => {
-            console.log("Error fetching data!");
-            console.error(err);
+        }).catch(requestErrors.StatusCodeError, (err) => {
+            throw new Error(`Steam API responded with a ${err.statusCode} error code!`);
         });
     };
 
@@ -90,9 +95,8 @@ function run() {
             team.steam_player_account_ids = steamPlayerAccountIds;
 
             return team.save();
-        }, (err) => {
-            console.log("Error fetching data!");
-            console.error(err);
+        }).catch(requestErrors.StatusCodeError, (err) => {
+            throw new Error(`Steam API responded with a ${err.statusCode} error code!`);
         });
     };
 
