@@ -5,7 +5,7 @@ require("babel/polyfill");
 var Promise = require("bluebird");
 var request = require("request-promise");
 var requestErrors = require("request-promise/errors");
-var azureStorage = require("azure-storage");
+//const azureStorage = require('azure-storage');
 var constants = require("../../config/constants");
 var SteamUtils = require("../../utils/steam-utils");
 var JobHelper = require("../job-helper");
@@ -23,7 +23,7 @@ function run() {
         return;
     }
 
-    var queueSvc = Promise.promisifyAll(azureStorage.createQueueService());
+    //const queueSvc = Promise.promisifyAll(azureStorage.createQueueService());
     var db = JobHelper.createMongooseConnection();
     var User = db.model("User");
     var Team = db.model("Team");
@@ -54,9 +54,11 @@ function run() {
                     });
 
                     return {
-                        v: match.save().then(function (storedMatch) {
-                            queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id);
-                        })
+                        v: match.save()
+                        //.then((storedMatch) => {
+                        //    queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id)
+                        //});
+
                     };
                 })();
 
