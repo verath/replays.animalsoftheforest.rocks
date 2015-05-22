@@ -3,10 +3,12 @@ require("babel/polyfill");
 const Promise = require("bluebird");
 const request = require('request-promise');
 const requestErrors = require('request-promise/errors');
+const azureStorage = require('azure-storage');
 const constants = require('../../config/constants');
 const SteamUtils = require('../../utils/steam-utils');
 const JobHelper = require('../job-helper');
 
+const REPLAY_QUEUE_NAME = 'match-replays'; // Name of the queue to replay requests to
 const RUN_INTERVAL = 60 * 60 * 1000; // Run every hour
 const REQUEST_DELAY = 1000; // Delay between requests to the steam api
 const MATCH_HISTORY_METHOD_URL = "http://api.steampowered.com/IDOTA2Match_570/GetMatchHistory/v0001/";
@@ -19,11 +21,11 @@ function run() {
         return;
     }
 
+    const queueSvc = Promise.promisifyAll(azureStorage.createQueueService());
     const db = JobHelper.createMongooseConnection();
     const User = db.model('User');
     const Team = db.model('Team');
     const Match = db.model('Match');
-
 
     const insertMatchIfNotExist = (matchData) => {
         const matchId = matchData["match_id"];
@@ -48,7 +50,9 @@ function run() {
                     })
                 });
 
-                return match.save();
+                return match.save().then((storedMatch) => {
+                    queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id)
+                });
             }
         })
     };
