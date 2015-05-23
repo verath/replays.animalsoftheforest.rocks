@@ -23,6 +23,7 @@
     "azure-storage": "^0.4.4",
     "bluebird": "^2.9.25",
     "connect-flash": "^0.1.1",
+    "dota2": "git://github.com/yasp-dota/node-dota2.git#9baa0985ec85f5cbfba7f43433f7c853aaf3c28e",
     "express": "^4.12.3",
     "express-handlebars": "^2.0.1",
     "express-session": "^1.11.2",
@@ -30,7 +31,8 @@
     "mongoose": "^4.0.3",
     "passport": "^0.2.1",
     "passport-steam": "^0.1.5",
-    "request-promise": "^0.4.2"
+    "request-promise": "^0.4.2",
+    "steam": "^0.6.8"
   },
   "devDependencies": {
     "del": "^1.1.1",
