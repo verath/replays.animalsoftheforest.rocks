@@ -1,7 +1,7 @@
 const Promise = require("bluebird");
 const request = require('request-promise');
 const requestErrors = require('request-promise/errors');
-//const azureStorage = require('azure-storage');
+const azureStorage = require('azure-storage');
 const constants = require('../../config/constants');
 const SteamUtils = require('../../utils/steam-utils');
 const JobHelper = require('../job-helper');
@@ -49,9 +49,9 @@ function run() {
                 });
 
                 return match.save()
-                    //.then((storedMatch) => {
-                    //    queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id)
-                    //});
+                    .then((storedMatch) => {
+                        queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id)
+                    });
             }
         })
     };

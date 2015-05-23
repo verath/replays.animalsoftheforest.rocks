@@ -3,7 +3,7 @@
 var Promise = require('bluebird');
 var request = require('request-promise');
 var requestErrors = require('request-promise/errors');
-//const azureStorage = require('azure-storage');
+var azureStorage = require('azure-storage');
 var constants = require('../../config/constants');
 var SteamUtils = require('../../utils/steam-utils');
 var JobHelper = require('../job-helper');
@@ -52,11 +52,9 @@ function run() {
                     });
 
                     return {
-                        v: match.save()
-                        //.then((storedMatch) => {
-                        //    queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id)
-                        //});
-
+                        v: match.save().then(function (storedMatch) {
+                            queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id);
+                        })
                     };
                 })();
 
