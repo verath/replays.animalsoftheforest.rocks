@@ -13,10 +13,10 @@ function run() {
     const Match = db.model('Match');
 
     const addMatchToQueue = (match) => {
-        return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, match._id)
+        return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, match.id)
             .then(() => {
-                console.log(`Added match ${match._id} (steam_match_id: ${match.steam_match_id})`);
-            })
+                console.log(`Added match ${match.id} (steam_match_id: ${match.steam_match_id})`);
+            });
     };
 
     const addMatchesToQueue = (matches) => {

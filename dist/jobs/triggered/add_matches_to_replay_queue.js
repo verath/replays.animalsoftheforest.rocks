@@ -15,8 +15,8 @@ function run() {
     var Match = db.model('Match');
 
     var addMatchToQueue = function addMatchToQueue(match) {
-        return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, match._id).then(function () {
-            console.log('Added match ' + match._id + ' (steam_match_id: ' + match.steam_match_id + ')');
+        return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, match.id).then(function () {
+            console.log('Added match ' + match.id + ' (steam_match_id: ' + match.steam_match_id + ')');
         });
     };
 

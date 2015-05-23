@@ -53,7 +53,7 @@ function run() {
 
                     return {
                         v: match.save().then(function (storedMatch) {
-                            queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch._id);
+                            return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch.id);
                         })
                     };
                 })();
