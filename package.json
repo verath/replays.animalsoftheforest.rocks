@@ -31,6 +31,7 @@
     "mongoose": "^4.0.3",
     "passport": "^0.2.1",
     "passport-steam": "^0.1.5",
+    "request": "^2.55.0",
     "request-promise": "^0.4.2",
     "steam": "^0.6.8"
   },
