@@ -19,7 +19,7 @@ function run() {
         return;
     }
 
-    //const queueSvc = Promise.promisifyAll(azureStorage.createQueueService());
+    const queueSvc = Promise.promisifyAll(azureStorage.createQueueService());
     const db = JobHelper.createMongooseConnection();
     const User = db.model('User');
     const Team = db.model('Team');
