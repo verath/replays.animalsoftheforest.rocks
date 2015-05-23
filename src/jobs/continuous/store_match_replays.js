@@ -13,8 +13,8 @@ const REPLAY_QUEUE_NAME = 'match-replays'; // Name of the queue to replay reques
 const REPLAY_BLOB_CONTAINER_NAME = 'replays'; // Name of the queue to replay requests to
 const RUN_INTERVAL = 15 * 60 * 1000; // Run every 15th minute
 const TIMEOUT_STEAM_CLIENT = 25000; // Timeout in ms for calls to the steam client
-const STEAM_REQUEST_DELAY = 3000; // Delay in ms between each match is processed
-const NUM_MESSAGES_PER_RUN = 1; // Number of queue message to process pre run
+const STEAM_REQUEST_DELAY = 4000; // Delay in ms between each match is processed
+const NUM_MESSAGES_PER_RUN = 3; // Number of queue message to process pre run
 
 const debugMode = (process.env['NODE_ENV'] !== 'production');
 
