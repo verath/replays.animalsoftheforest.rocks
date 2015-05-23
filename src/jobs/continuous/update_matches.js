@@ -1,5 +1,3 @@
-require("babel/polyfill");
-
 const Promise = require("bluebird");
 const request = require('request-promise');
 const requestErrors = require('request-promise/errors');

@@ -1,5 +1,3 @@
-require("babel/polyfill");
-
 const mongoose = require('mongoose');
 const express = require('express');
 const passport = require('passport');

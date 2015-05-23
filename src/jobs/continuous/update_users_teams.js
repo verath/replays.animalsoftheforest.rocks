@@ -1,5 +1,3 @@
-require("babel/polyfill");
-
 const Promise = require("bluebird");
 const request = require('request-promise');
 const requestErrors = require('request-promise/errors');
@@ -38,8 +36,6 @@ function run() {
         };
 
         return request(reqOptions).then((res) => {
-            console.log("Fetched user data successfully");
-
             const playerData = res["response"]["players"][0];
             user.steam_persona_name = playerData["personaname"];
             user.steam_profile_url = playerData["profileurl"];
@@ -76,8 +72,6 @@ function run() {
         };
 
         return request(reqOptions).then((res) => {
-            console.log("Fetched team data successfully");
-
             const teamData = res["result"]["teams"][0];
             team.steam_name = teamData["name"];
             team.steam_tag = teamData["tag"];

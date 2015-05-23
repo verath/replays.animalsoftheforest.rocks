@@ -1,7 +1,5 @@
 'use strict';
 
-require('babel/polyfill');
-
 var mongoose = require('mongoose');
 var express = require('express');
 var passport = require('passport');

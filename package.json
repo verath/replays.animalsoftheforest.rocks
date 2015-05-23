@@ -21,7 +21,6 @@
   "homepage": "https://github.com/verath/replays.animalsoftheforest.rocks",
   "dependencies": {
     "azure-storage": "^0.4.4",
-    "babel": "^5.4.3",
     "bluebird": "^2.9.25",
     "connect-flash": "^0.1.1",
     "express": "^4.12.3",
