@@ -51,17 +51,17 @@ matchSchema.set('autoIndex', false);
 
 // Virtual properties
 matchSchema.virtual('replay_fetch_status').get(function () {
-    if (undefined.replay_url) {
+    if (this.replay_url) {
         return MATCH_REPLAY_FETCH_STATUS.Finished;
-    } else if (!undefined.replay_fetch_queue_added_at) {
+    } else if (!this.replay_fetch_queue_added_at) {
         return MATCH_REPLAY_FETCH_STATUS.NotStarted;
     } else {
-        var isExpired = moment(undefined.replay_fetch_queue_added_at).add(MATCH_REPLAY_FETCH_TIMEOUT).isBefore(moment());
+        var isExpired = moment(this.replay_fetch_queue_added_at).add(MATCH_REPLAY_FETCH_TIMEOUT).isBefore(moment());
         return isExpired ? MATCH_REPLAY_FETCH_STATUS.Expired : MATCH_REPLAY_FETCH_STATUS.Started;
     }
 }).set(function (value) {
     if (value === MATCH_REPLAY_FETCH_STATUS.Started) {
-        undefined.replay_fetch_queue_added_at = new Date();
+        this.replay_fetch_queue_added_at = new Date();
     }
 });
 
@@ -74,7 +74,7 @@ matchSchema.methods = {
      */
     isSteamReplayExpired: function isSteamReplayExpired() {
         var expiredThreshold = moment().subtract(7, 'days').unix();
-        var matchStartTime = moment.unix(undefined.steam_start_time);
+        var matchStartTime = moment.unix(this.steam_start_time);
         return !!matchStartTime.isBefore(expiredThreshold);
     },
 
@@ -83,7 +83,7 @@ matchSchema.methods = {
      * @returns {boolean} True if this match was ranked.
      */
     isRanked: function isRanked() {
-        return undefined.steam_lobby_type === MATCH_LOBBY_TYPE.Ranked;
+        return this.steam_lobby_type === MATCH_LOBBY_TYPE.Ranked;
     }
 };
 

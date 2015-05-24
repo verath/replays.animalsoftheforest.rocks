@@ -48,7 +48,7 @@ const matchSchema = new Schema({
 matchSchema.set('autoIndex', false);
 
 // Virtual properties
-matchSchema.virtual('replay_fetch_status').get(() => {
+matchSchema.virtual('replay_fetch_status').get(function () {
     if (this.replay_url) {
         return MATCH_REPLAY_FETCH_STATUS.Finished;
     } else if (!this.replay_fetch_queue_added_at) {
@@ -59,7 +59,7 @@ matchSchema.virtual('replay_fetch_status').get(() => {
             .isBefore(moment());
         return isExpired ? MATCH_REPLAY_FETCH_STATUS.Expired : MATCH_REPLAY_FETCH_STATUS.Started;
     }
-}).set((value) => {
+}).set(function (value) {
     if (value === MATCH_REPLAY_FETCH_STATUS.Started) {
         this.replay_fetch_queue_added_at = new Date();
     }
@@ -73,7 +73,7 @@ matchSchema.methods = {
      * Tests if the match replays is expired.
      * @returns {boolean} True if the replay is expired.
      */
-    isSteamReplayExpired: () => {
+    isSteamReplayExpired: function () {
         const expiredThreshold = moment().subtract(7, 'days').unix();
         const matchStartTime = moment.unix(this.steam_start_time);
         return !!matchStartTime.isBefore(expiredThreshold);
@@ -83,7 +83,7 @@ matchSchema.methods = {
      * Returns whether this match was a ranked match.
      * @returns {boolean} True if this match was ranked.
      */
-    isRanked: () => {
+    isRanked: function () {
         return this.steam_lobby_type === MATCH_LOBBY_TYPE.Ranked;
     }
 };
