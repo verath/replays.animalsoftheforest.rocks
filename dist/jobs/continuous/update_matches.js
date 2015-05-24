@@ -65,6 +65,10 @@ function run() {
             });
         });
 
+        if (shouldAddMatchToReplayQueue(match)) {
+            match.replay_fetch_status = 'Started';
+        }
+
         return Promise.resolve(match.save()).then(function (storedMatch) {
             if (shouldAddMatchToReplayQueue(storedMatch)) {
                 return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch.id);

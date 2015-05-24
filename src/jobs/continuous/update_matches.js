@@ -63,6 +63,10 @@ function run() {
             })
         });
 
+        if(shouldAddMatchToReplayQueue(match)) {
+            match.replay_fetch_status = "Started";
+        }
+
         return Promise.resolve(match.save())
             .then((storedMatch) => {
                 if (shouldAddMatchToReplayQueue(storedMatch)) {
