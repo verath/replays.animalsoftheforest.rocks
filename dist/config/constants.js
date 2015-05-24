@@ -14,5 +14,5 @@ module.exports = {
     MONGODB_CONNECTION_STRING: process.env['MONGODB_CONNECTION_STRING'],
 
     /** The secret key to sign cookies with */
-    COOKIE_SECRET: 'abc' // TODO: Good key
+    COOKIE_SECRET: process.env['COOKIE_SECRET']
 };
