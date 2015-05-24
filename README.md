@@ -39,3 +39,8 @@ $ node dist/app.js
 **./App_Data** - This folder is special to Azure and is used for [WebJobs](http://blog.amitapple.com/post/74215124623/deploy-azure-webjobs/). Within it are folders containing jobs that Azure automatically runs (`continuous/`) or that can be run manually (`triggered/`). Azure will consider each directory within these categories as a job, and will run the `run.*` file. For .js files this script is run in place (for other extensions, this script might be copied and run elsewhere in the filesystem).
 
 **./dist** - Azure does not like running build tools. As such, the compiled version of the src folder is also included in the repo.
+
+## Inspiration
+[yasp-dota](https://github.com/yasp-dota/yasp) - Open Source Dota 2 Replay Parsing and Statistics. Much of the match details fetching required to get the replay url is based on what they have done with their "retreiver".
+
+[node-express-mongoose-demo](https://github.com/madhums/node-express-mongoose-demo) - Parts of the initial app strucutre is based on this example. 
