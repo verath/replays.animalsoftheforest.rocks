@@ -1,2 +1,41 @@
 # replays.animalsoftheforest.rocks
-The replays.animalsoftheforest.rocks website.
+
+A node.js web app for fetching and storing dota2 replay files for longer periods of time. Built for hosting on Microsoft Azure.
+
+## Installing
+```
+$ npm install
+$ gulp
+```
+
+## Environment Variables
+These variables must be set for the application to work.
+
+| Name |  Description | Example Value |
+| ---- | ------------ | ------------- |
+| SITE_URL | The base URL of the site | `http://127.0.0.1:3000/` 
+| STEAM_WEB_API_KEY | The [Steam Web API](http://steamcommunity.com/dev/apikey) key | `123abc` 
+| MONGODB_CONNECTION_STRING | The MongoDB connection string | `mongodb://user:123@abc...` 
+| AZURE_STORAGE_CONNECTION_STRING | The Azure Storage connection string | `somelongstring...`
+| STEAM_ACC_ACCOUNT_NAME | A Steam username to use when signing in to dota | `user_name` 
+| STEAM_ACC_PASSWORD | The password for the Steam username | `secret`
+| COOKIE_SECRET | A secret key to sign sessions with | `not keyboard cat`
+
+## Running
+```
+$ gulp
+$ node dist/app.js
+```
+
+## Tech
+* [ES6](https://github.com/lukehoban/es6features) - The app is built using ES6, and is compiled to ES5 via [Babel](http://babeljs.io).
+* [Express 4](http://expressjs.com/) - As the webserver.
+* MongoDB + [mongoose](http://mongoosejs.com/) - Primary database. 
+* [Azure Storage](http://azure.microsoft.com/en-in/services/storage/) - Used both as a task queue for replay fetch requests, and as blob storage for the replays.
+* [node-steam](https://github.com/seishun/node-steam) + [yasp-dota's fork of node-dota2](https://github.com/yasp-dota/node-dota2) for connecting to and fetching data from dota.
+
+## Special Azure Directory Structure
+
+**./App_Data** - This folder is special to Azure and is used for [WebJobs](http://blog.amitapple.com/post/74215124623/deploy-azure-webjobs/). Within it are folders containing jobs that Azure automatically runs (`continuous/`) or that can be run manually (`triggered/`). Azure will consider each directory within these categories as a job, and will run the `run.*` file. For .js files this script is run in place (for other extensions, this script might be copied and run elsewhere in the filesystem).
+
+**./dist** - Azure does not like running build tools. As such, the compiled version of the src folder is also included in the repo.
