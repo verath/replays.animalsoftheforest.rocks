@@ -1,5 +1,8 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const Promise = require('bluebird');
 const auth = require('../middleware/authorization');
+const Match = mongoose.model('Match');
 
 module.exports = (passport) => {
     const router = express.Router();
@@ -10,8 +13,17 @@ module.exports = (passport) => {
     });
 
     router.get('/home', auth.is.user, (req, res) => {
-        const viewData = {user: req['user']};
-        res.render('home', viewData);
+        const findMatches = Match.find()
+            .limit(100)
+            .sort('-steam_match_seq_num')
+            .select('steam_match_id replay_url')
+            .exec();
+
+        Promise.resolve(findMatches).then((matches) => {
+            matches = matches.map((match) => match.toJSON({virtuals: true}));
+            const viewData = {matches: matches};
+            res.render('home', viewData);
+        });
     });
 
     const authRoute = require('./auth')(passport);

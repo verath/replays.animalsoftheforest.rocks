@@ -1,1 +1,20 @@
-<h1>Hello {{user.steam_id}} ({{user.steam_persona_name}})!</h1>
+<table>
+    <thead>
+    <tr>
+        <td>Match Id</td>
+        <td>Replay</td>
+    </tr>
+    </thead>
+    <tbody>
+    {{#each matches}}
+        <tr>
+            <td><a href="http://www.dotabuff.com/matches/{{this.steam_match_id}}">{{this.steam_match_id}}</a></td>
+            {{#if this.replay_url}}
+                <td><a href="{{this.replay_url}}">Download</a></td>
+            {{else}}
+                <td>N/A ({{this.replay_fetch_status}})</td>
+            {{/if}}
+        </tr>
+    {{/each}}
+    </tbody>
+</table>

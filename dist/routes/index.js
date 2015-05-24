@@ -1,7 +1,10 @@
 'use strict';
 
 var express = require('express');
+var mongoose = require('mongoose');
+var Promise = require('bluebird');
 var auth = require('../middleware/authorization');
+var Match = mongoose.model('Match');
 
 module.exports = function (passport) {
     var router = express.Router();
@@ -12,8 +15,15 @@ module.exports = function (passport) {
     });
 
     router.get('/home', auth.is.user, function (req, res) {
-        var viewData = { user: req['user'] };
-        res.render('home', viewData);
+        var findMatches = Match.find().limit(100).sort('-steam_match_seq_num').select('steam_match_id replay_url').exec();
+
+        Promise.resolve(findMatches).then(function (matches) {
+            matches = matches.map(function (match) {
+                return match.toJSON({ virtuals: true });
+            });
+            var viewData = { matches: matches };
+            res.render('home', viewData);
+        });
     });
 
     var authRoute = require('./auth')(passport);
