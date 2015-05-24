@@ -14,7 +14,7 @@ require('./config/mongoose')(mongoose, constants);
 require('./config/passport')(passport);
 
 // Express application config
-require('./config/express')(app, passport);
+require('./config/express')(app, passport, mongoose);
 
 // Route config
 const routes = require('./routes')(passport);
