@@ -12,7 +12,7 @@ const TEAM_INFO_METHOD_URL = "http://api.steampowered.com/IDOTA2Match_570/GetTea
 
 
 function run() {
-    console.log("Running update_users_and_teams");
+    console.log("Running job");
 
     if (JobHelper.shouldShutdown()) {
         console.log("Detected shutdown request, stopping");
@@ -23,7 +23,7 @@ function run() {
     const User = db.model('User');
     const Team = db.model('Team');
 
-    const updateUser = (user) => {
+    function updateUser(user) {
         console.log("Updating user with steamId:", user.steam_id);
 
         const reqOptions = {
@@ -48,17 +48,17 @@ function run() {
         }).catch(requestErrors.StatusCodeError, (err) => {
             throw new Error(`Steam API responded with a ${err.statusCode} error code!`);
         });
-    };
+    }
 
-    const updateUsers = (users) => {
+    function updateUsers(users) {
         if (users != null) {
             return users.reduce((fetchPromise, user) => {
                 return fetchPromise.then(() => updateUser(user)).delay(REQUEST_DELAY);
             }, Promise.resolve());
         }
-    };
+    }
 
-    const updateTeam = (team) => {
+    function updateTeam(team) {
         console.log("Updating team with steam team id:", team.steam_team_id);
 
         const reqOptions = {
@@ -92,33 +92,33 @@ function run() {
         }).catch(requestErrors.StatusCodeError, (err) => {
             throw new Error(`Steam API responded with a ${err.statusCode} error code!`);
         });
-    };
+    }
 
-    const updateTeams = (teams) => {
+    function updateTeams(teams) {
         if (teams != null) {
             return teams.reduce((fetchPromise, team) => {
                 return fetchPromise.then(() => updateTeam(team)).delay(REQUEST_DELAY);
             }, Promise.resolve())
         }
-    };
+    }
 
-    User.find({}).exec()
+    Promise.resolve(User.find({}).exec())
         .then(updateUsers)
-        .then(null, (err) => {
+        .catch((err) => {
             console.log("Error while updating users!");
             console.error(err)
         })
-        .then(() => Team.find({}))
+        .then(() => Promise.resolve(Team.find({}).exec()))
         .then(updateTeams)
-        .then(null, (err) => {
+        .catch((err) => {
             console.log("Error while updating teams!");
             console.error(err);
         })
-        .then(() => {
+        .finally(() => {
             db.close();
-            console.log("update_users_teams finished");
         })
         .then(() => {
+            console.log("job finished");
             setTimeout(run, RUN_INTERVAL);
         });
 }

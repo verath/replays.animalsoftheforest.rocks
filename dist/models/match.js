@@ -1,13 +1,14 @@
 'use strict';
 
 var mongoose = require('mongoose');
+var moment = require('moment');
 var Schema = mongoose.Schema;
 
 var matchSchema = new Schema({
     replay_url: String, // The url of the match replay file
     team_ids: [Number], // For easier querying of matches for a team
 
-    steam_match_id: Number,
+    steam_match_id: { type: Number, unique: true },
     steam_match_seq_num: Number,
     steam_start_time: Number,
     steam_lobby_type: Number,
@@ -19,6 +20,42 @@ var matchSchema = new Schema({
         hero_id: Number
     }]
 });
+// Disable auto index as it has a big performance impact
+matchSchema.set('autoIndex', false);
+
+var MATCH_LOBBY_TYPES = {
+    'Invalid': -1,
+    'UnRanked': 0,
+    'Practise': 1,
+    'Tournament': 2,
+    'Tutorial': 3,
+    'CoopWithBots': 4,
+    'TeamMatch': 5,
+    'SoloQueue': 6,
+    'Ranked': 7
+};
+
+// Instance Methods
+matchSchema.methods = {
+
+    /**
+     * Tests if the match replays is expired.
+     * @returns {boolean} True if the replay is expired.
+     */
+    isSteamReplayExpired: function isSteamReplayExpired() {
+        var expiredThreshold = moment().subtract(7, 'days').unix();
+        var matchStartTime = moment.unix(undefined.steam_start_time);
+        return !!matchStartTime.isBefore(expiredThreshold);
+    },
+
+    /**
+     * Returns whether this match was a ranked match.
+     * @returns {boolean} True if this match was ranked.
+     */
+    isRanked: function isRanked() {
+        return undefined.steam_lobby_type === MATCH_LOBBY_TYPES.Ranked;
+    }
+};
 
 module.exports = function (connection) {
     connection.model('Match', matchSchema);

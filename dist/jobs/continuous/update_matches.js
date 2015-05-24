@@ -27,41 +27,55 @@ function run() {
     var Team = db.model('Team');
     var Match = db.model('Match');
 
-    var insertMatchIfNotExist = function insertMatchIfNotExist(matchData) {
-        var matchId = matchData['match_id'];
-        return Match.count({ steam_match_id: matchId }).then(function (count) {
-            if (count === 0) {
-                var _ret = (function () {
-                    // No match currently exist, create a new one
-                    var match = new Match({
-                        team_ids: [matchData['dire_team_id'], matchData['radiant_team_id']],
-                        steam_match_id: matchData['match_id'],
-                        steam_match_seq_num: matchData['match_seq_num'],
-                        steam_start_time: matchData['start_time'],
-                        steam_lobby_type: matchData['lobby_type'],
-                        steam_radiant_team_id: matchData['radiant_team_id'],
-                        steam_dire_team_id: matchData['dire_team_id']
-                    });
+    var steamTeamIds = [];
 
-                    matchData['players'].forEach(function (player) {
-                        match.steam_players.push({
-                            account_id: SteamUtils.steamId32To64(player['account_id']),
-                            player_slot: player['player_slot'],
-                            hero_id: player['hero_id']
-                        });
-                    });
+    function shouldAddMatchToReplayQueue(match) {
+        if (match.isSteamReplayExpired()) {
+            return false;
+        }
+        if (!match.isRanked()) {
+            return false;
+        }
+        if (match.replay_url) {
+            return false;
+        }
+        // Only add matches with a tracked team in for now
+        var teamsInMatch = steamTeamIds.filter(function (steamTeamId) {
+            return match.team_ids.indexOf(steamTeamId) !== -1;
+        });
+        return teamsInMatch.length > 0;
+    }
 
-                    return {
-                        v: match.save().then(function (storedMatch) {
-                            return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch.id);
-                        })
-                    };
-                })();
+    function insertMatchIfNotExist(matchData) {
+        var match = new Match({
+            team_ids: [matchData['dire_team_id'], matchData['radiant_team_id']],
+            steam_match_id: matchData['match_id'],
+            steam_match_seq_num: matchData['match_seq_num'],
+            steam_start_time: matchData['start_time'],
+            steam_lobby_type: matchData['lobby_type'],
+            steam_radiant_team_id: matchData['radiant_team_id'],
+            steam_dire_team_id: matchData['dire_team_id']
+        });
 
-                if (typeof _ret === 'object') return _ret.v;
+        matchData['players'].forEach(function (player) {
+            match.steam_players.push({
+                account_id: SteamUtils.steamId32To64(player['account_id']),
+                player_slot: player['player_slot'],
+                hero_id: player['hero_id']
+            });
+        });
+
+        return Promise.resolve(match.save()).then(function (storedMatch) {
+            if (shouldAddMatchToReplayQueue(storedMatch)) {
+                return queueSvc.createMessageAsync(REPLAY_QUEUE_NAME, storedMatch.id);
+            }
+        }, function (err) {
+            if (err.code !== 11000) {
+                // Catch DuplicateKey error (match already exist)
+                throw err;
             }
         });
-    };
+    }
 
     /**
      * Function for (recursively) fetching match ids for an account until a a match id.
@@ -69,7 +83,7 @@ function run() {
      * @param untilMatchSeqNum The match seq num where to stop fetching.
      * @param [startAtId = -1] Match id to start fetching from
      */
-    var fetchMatchesUntilMatchSeqNum = function fetchMatchesUntilMatchSeqNum(accountId, untilMatchSeqNum) {
+    function fetchMatchesUntilMatchSeqNum(accountId, untilMatchSeqNum) {
         var startAtId = arguments[2] === undefined ? -1 : arguments[2];
 
         var reqOptions = {
@@ -87,7 +101,7 @@ function run() {
             if (numResults == 0) {
                 return [];
             } else {
-                var _ret2 = (function () {
+                var _ret = (function () {
                     var matches = res['result']['matches'];
                     var lastMatch = matches.slice(-1)[0];
                     var lastMatchSeqNum = lastMatch['match_seq_num'];
@@ -108,14 +122,14 @@ function run() {
                     }
                 })();
 
-                if (typeof _ret2 === 'object') return _ret2.v;
+                if (typeof _ret === 'object') return _ret.v;
             }
         })['catch'](requestErrors.StatusCodeError, function (err) {
             throw new Error('Steam API responded with a ' + err.statusCode + ' error code!');
         }).delay(REQUEST_DELAY);
-    };
+    }
 
-    var fetchMatchesForUser = function fetchMatchesForUser(user) {
+    function fetchMatchesForUser(user) {
         var accountId = SteamUtils.steamId64To32(user.steam_id);
         var userName = user.steam_persona_name;
         var latestMatchSeqNum = user.latest_match_seq_num;
@@ -135,9 +149,9 @@ function run() {
             user.latest_match_seq_num = newestMatchSeqNum;
             return user.save();
         });
-    };
+    }
 
-    var fetchMatchesForUsers = function fetchMatchesForUsers(users) {
+    function fetchMatchesForUsers(users) {
         if (users != null) {
             return users.reduce(function (fetchPromise, user) {
                 return fetchPromise.then(function () {
@@ -145,15 +159,19 @@ function run() {
                 }).delay(REQUEST_DELAY);
             }, Promise.resolve());
         }
-    };
+    }
 
-    User.find({}).exec().then(fetchMatchesForUsers).then(null, function (err) {
+    Promise.resolve(Team.find({}).exec()).each(function (team) {
+        return steamTeamIds.push(team);
+    }).then(function () {
+        return Promise.resolve(User.find({}).exec());
+    }).then(fetchMatchesForUsers)['catch'](function (err) {
         console.log('Error while updating matches for users!');
         console.error(err);
-    }).then(function () {
+    })['finally'](function () {
         db.close();
-        console.log('update_matches finished');
     }).then(function () {
+        console.log('job finished');
         setTimeout(run, RUN_INTERVAL);
     });
 }

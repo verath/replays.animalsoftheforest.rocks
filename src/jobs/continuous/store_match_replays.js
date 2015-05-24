@@ -19,7 +19,6 @@ const NUM_MESSAGES_PER_RUN = 3; // Number of queue message to process pre run
 const debugMode = (process.env['NODE_ENV'] !== 'production');
 
 function run() {
-    let steamClient, dota2Client;
 
     console.log("Running job");
 
@@ -32,8 +31,9 @@ function run() {
     const blobSvc = azureStorage.createBlobService();
     const db = JobHelper.createMongooseConnection();
     const Match = db.model('Match');
-    const expiredThresholdTimestamp = moment().subtract(7, 'days').unix();
 
+    let steamClient = null;
+    let dota2Client = null;
 
     function disconnectFromDota() {
         if (dota2Client) {
@@ -106,43 +106,32 @@ function run() {
                 return `http://replay${cluster}.valve.net/570/${steamMatchId}_${replaySalt}.dem.bz2`;
             })
             .timeout(TIMEOUT_STEAM_CLIENT)
-            .then((replayUrl) => {
-                return storeMatchReplay(replayUrl, steamMatchId + ".dem.bz2");
-            })
+            .then((replayUrl) => storeMatchReplay(replayUrl, steamMatchId + ".dem.bz2"))
             .then((fileName) => {
                 match.replay_url = `https://aotfreplays.blob.core.windows.net/${REPLAY_BLOB_CONTAINER_NAME}/${fileName}`;
                 return Promise.resolve(match.save());
-            })
+            });
     }
 
     function handleQueueMessage(message) {
         const matchId = message.messagetext;
         return Promise.resolve(Match.findById(matchId).exec())
             .then((match) => {
-                console.log("Fetching replay for match: " + match.steam_match_id);
-                const matchStartTime = moment.unix(match.steam_start_time);
-                if (matchStartTime.isBefore(expiredThresholdTimestamp)) {
-                    console.log("Aborting, match was expired, played on: ", moment.unix(match.steam_start_time).format());
-                    return;
+                if (!match) {
+                    console.log("Not fetching replay, match not found in db. matchId: " + matchId);
+                } else if (match.isSteamReplayExpired()) {
+                    console.log("Not fetching replay for match: " + match.steam_match_id + ", replay is expired");
+                } else {
+                    console.log("Fetching replay for match: " + match.steam_match_id);
+                    return fetchMatchReplayUrl(match).then(() => console.log("Replay fetched successfully"));
                 }
-                if (match.steam_lobby_type !== 7) {
-                    console.log("Aborting, match was not a team match");
-                    return;
-                }
-                if (match.replay_url) {
-                    console.log("Aborting, match already has a replay url");
-                    return;
-                }
-                return fetchMatchReplayUrl(match).then(() => {
-                    console.log("Replay fetched successfully");
-                });
-            })
+            });
     }
 
     function getMessagesFromQueue() {
         return queueSvc.getMessagesAsync(REPLAY_QUEUE_NAME, {
             numOfMessages: NUM_MESSAGES_PER_RUN,
-            visibilityTimeout: 120
+            visibilityTimeout: 60 * NUM_MESSAGES_PER_RUN
         }).spread((result) => result);
     }
 

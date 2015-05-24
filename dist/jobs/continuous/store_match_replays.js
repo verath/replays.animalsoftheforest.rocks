@@ -21,8 +21,6 @@ var NUM_MESSAGES_PER_RUN = 3; // Number of queue message to process pre run
 var debugMode = process.env['NODE_ENV'] !== 'production';
 
 function run() {
-    var steamClient = undefined,
-        dota2Client = undefined;
 
     console.log('Running job');
 
@@ -35,7 +33,9 @@ function run() {
     var blobSvc = azureStorage.createBlobService();
     var db = JobHelper.createMongooseConnection();
     var Match = db.model('Match');
-    var expiredThresholdTimestamp = moment().subtract(7, 'days').unix();
+
+    var steamClient = null;
+    var dota2Client = null;
 
     function disconnectFromDota() {
         if (dota2Client) {
@@ -114,30 +114,23 @@ function run() {
     function handleQueueMessage(message) {
         var matchId = message.messagetext;
         return Promise.resolve(Match.findById(matchId).exec()).then(function (match) {
-            console.log('Fetching replay for match: ' + match.steam_match_id);
-            var matchStartTime = moment.unix(match.steam_start_time);
-            if (matchStartTime.isBefore(expiredThresholdTimestamp)) {
-                console.log('Aborting, match was expired, played on: ', moment.unix(match.steam_start_time).format());
-                return;
+            if (!match) {
+                console.log('Not fetching replay, match not found in db. matchId: ' + matchId);
+            } else if (match.isSteamReplayExpired()) {
+                console.log('Not fetching replay for match: ' + match.steam_match_id + ', replay is expired');
+            } else {
+                console.log('Fetching replay for match: ' + match.steam_match_id);
+                return fetchMatchReplayUrl(match).then(function () {
+                    return console.log('Replay fetched successfully');
+                });
             }
-            if (match.steam_lobby_type !== 7) {
-                console.log('Aborting, match was not a team match');
-                return;
-            }
-            if (match.replay_url) {
-                console.log('Aborting, match already has a replay url');
-                return;
-            }
-            return fetchMatchReplayUrl(match).then(function () {
-                console.log('Replay fetched successfully');
-            });
         });
     }
 
     function getMessagesFromQueue() {
         return queueSvc.getMessagesAsync(REPLAY_QUEUE_NAME, {
             numOfMessages: NUM_MESSAGES_PER_RUN,
-            visibilityTimeout: 120
+            visibilityTimeout: 60 * NUM_MESSAGES_PER_RUN
         }).spread(function (result) {
             return result;
         });

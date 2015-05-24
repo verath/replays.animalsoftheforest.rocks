@@ -13,7 +13,7 @@ var PLAYER_SUMMARIES_METHOD_URL = 'http://api.steampowered.com/ISteamUser/GetPla
 var TEAM_INFO_METHOD_URL = 'http://api.steampowered.com/IDOTA2Match_570/GetTeamInfoByTeamID/v0001/';
 
 function run() {
-    console.log('Running update_users_and_teams');
+    console.log('Running job');
 
     if (JobHelper.shouldShutdown()) {
         console.log('Detected shutdown request, stopping');
@@ -24,7 +24,7 @@ function run() {
     var User = db.model('User');
     var Team = db.model('Team');
 
-    var updateUser = function updateUser(user) {
+    function updateUser(user) {
         console.log('Updating user with steamId:', user.steam_id);
 
         var reqOptions = {
@@ -49,9 +49,9 @@ function run() {
         })['catch'](requestErrors.StatusCodeError, function (err) {
             throw new Error('Steam API responded with a ' + err.statusCode + ' error code!');
         });
-    };
+    }
 
-    var updateUsers = function updateUsers(users) {
+    function updateUsers(users) {
         if (users != null) {
             return users.reduce(function (fetchPromise, user) {
                 return fetchPromise.then(function () {
@@ -59,9 +59,9 @@ function run() {
                 }).delay(REQUEST_DELAY);
             }, Promise.resolve());
         }
-    };
+    }
 
-    var updateTeam = function updateTeam(team) {
+    function updateTeam(team) {
         console.log('Updating team with steam team id:', team.steam_team_id);
 
         var reqOptions = {
@@ -95,9 +95,9 @@ function run() {
         })['catch'](requestErrors.StatusCodeError, function (err) {
             throw new Error('Steam API responded with a ' + err.statusCode + ' error code!');
         });
-    };
+    }
 
-    var updateTeams = function updateTeams(teams) {
+    function updateTeams(teams) {
         if (teams != null) {
             return teams.reduce(function (fetchPromise, team) {
                 return fetchPromise.then(function () {
@@ -105,20 +105,20 @@ function run() {
                 }).delay(REQUEST_DELAY);
             }, Promise.resolve());
         }
-    };
+    }
 
-    User.find({}).exec().then(updateUsers).then(null, function (err) {
+    Promise.resolve(User.find({}).exec()).then(updateUsers)['catch'](function (err) {
         console.log('Error while updating users!');
         console.error(err);
     }).then(function () {
-        return Team.find({});
-    }).then(updateTeams).then(null, function (err) {
+        return Promise.resolve(Team.find({}).exec());
+    }).then(updateTeams)['catch'](function (err) {
         console.log('Error while updating teams!');
         console.error(err);
-    }).then(function () {
+    })['finally'](function () {
         db.close();
-        console.log('update_users_teams finished');
     }).then(function () {
+        console.log('job finished');
         setTimeout(run, RUN_INTERVAL);
     });
 }
