@@ -7,12 +7,7 @@ const Match = mongoose.model('Match');
 module.exports = (passport) => {
     const router = express.Router();
 
-    router.get('/', (req, res) => {
-        const viewData = {errorMessage: req.flash('error')};
-        res.render('index', viewData);
-    });
-
-    router.get('/home', auth.is.user, (req, res) => {
+    router.get('/', auth.is.user, (req, res) => {
         const findMatches = Match.find()
             .limit(100)
             .sort('-steam_match_seq_num')
@@ -24,6 +19,11 @@ module.exports = (passport) => {
             const viewData = {matches: matches};
             res.render('home', viewData);
         });
+    });
+
+    router.get('/login', (req, res) => {
+        const viewData = {errorMessage: req.flash('error')};
+        res.render('login', viewData);
     });
 
     const authRoute = require('./auth')(passport);

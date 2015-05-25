@@ -9,12 +9,7 @@ var Match = mongoose.model('Match');
 module.exports = function (passport) {
     var router = express.Router();
 
-    router.get('/', function (req, res) {
-        var viewData = { errorMessage: req.flash('error') };
-        res.render('index', viewData);
-    });
-
-    router.get('/home', auth.is.user, function (req, res) {
+    router.get('/', auth.is.user, function (req, res) {
         var findMatches = Match.find().limit(100).sort('-steam_match_seq_num').select('steam_match_id replay_url').exec();
 
         Promise.resolve(findMatches).then(function (matches) {
@@ -24,6 +19,11 @@ module.exports = function (passport) {
             var viewData = { matches: matches };
             res.render('home', viewData);
         });
+    });
+
+    router.get('/login', function (req, res) {
+        var viewData = { errorMessage: req.flash('error') };
+        res.render('login', viewData);
     });
 
     var authRoute = require('./auth')(passport);

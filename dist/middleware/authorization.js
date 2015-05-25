@@ -1,7 +1,7 @@
 "use strict";
 
 var redirectToLoginPage = function redirectToLoginPage(req, res) {
-    var loginUrl = "/";
+    var loginUrl = "/login";
     if (req.method === "GET") {
         loginUrl += "?returnTo=" + encodeURIComponent(req.originalUrl);
     }

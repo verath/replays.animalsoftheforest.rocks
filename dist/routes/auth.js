@@ -9,8 +9,8 @@ module.exports = function (passport) {
     // Steam sign on
     router.get('/steam', passport.authenticate('steam'));
     router.get('/steam/return', passport.authenticate('steam', {
-        successRedirect: '/home',
-        failureRedirect: '/',
+        successRedirect: '/',
+        failureRedirect: '/login',
         failureFlash: true
     }));
 

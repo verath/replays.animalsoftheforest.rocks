@@ -1,5 +1,5 @@
 const redirectToLoginPage = (req, res) => {
-    let loginUrl = '/';
+    let loginUrl = '/login';
     if (req.method === "GET") {
         loginUrl += `?returnTo=${encodeURIComponent(req.originalUrl)}`;
     }
