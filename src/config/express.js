@@ -1,3 +1,4 @@
+const express = require('express');
 const exphbs = require('express-handlebars');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
@@ -6,6 +7,13 @@ const flash = require('connect-flash');
 const constants = require('./constants');
 
 module.exports = (app, passport, mongoose) => {
+
+    // Serve static files in /public in develop mode. In production this is done by Azure
+    if(process.env['NODE_ENV'] !== 'production') {
+        console.log('Not production, using express for serving static files.');
+        app.use(express.static(__dirname + '/../../public'));
+    }
+
     // View engine
     const viewDir = __dirname + '/../views/';
     app.set('views', viewDir);

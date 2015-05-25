@@ -1,22 +1,43 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Promise = require('bluebird');
+const moment = require('moment');
+const _ = require('lodash');
 const auth = require('../middleware/authorization');
 const Match = mongoose.model('Match');
+const User = mongoose.model('User');
 
 module.exports = (passport) => {
     const router = express.Router();
 
     router.get('/', auth.is.user, (req, res) => {
-        const findMatches = Match.find()
-            .limit(100)
-            .sort('-steam_match_seq_num')
-            .select('steam_match_id replay_url')
-            .exec();
+        const pageNumber = parseInt(req.query['page'], 10) || 1;
+        const pageIndex = pageNumber - 1;
 
-        Promise.resolve(findMatches).then((matches) => {
+        const findUsers = User.find({}).exec();
+        const findMatches = Match.find()
+            .skip(pageIndex * 15)
+            .limit(15)
+            .sort('-steam_match_seq_num')
+            .exec();
+        const findMatchCount = Match.find({}).count().exec();
+
+        Promise.all([findUsers, findMatches, findMatchCount]).spread((users, matches, matchCount) => {
+            const hasNextPage = (pageIndex + 1) * 15 <= matchCount;
+
             matches = matches.map((match) => match.toJSON({virtuals: true}));
-            const viewData = {matches: matches};
+            matches.forEach((match) => {
+                match.users = _.chain(match.steam_players).map((player) => {
+                    return _.find(users, 'steam_id', player.account_id);
+                }).compact().value();
+                match.played_at_ago = moment.unix(match.steam_start_time).fromNow();
+                match.played_at_datetime = moment.unix(match.steam_start_time).format();
+            });
+            const viewData = {
+                matches: matches,
+                prevPage: (pageNumber - 1),
+                nextPage: hasNextPage ? (pageNumber + 1) : false
+            };
             res.render('home', viewData);
         });
     });
