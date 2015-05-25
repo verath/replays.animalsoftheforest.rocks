@@ -6,6 +6,7 @@ var Promise = require('bluebird');
 var moment = require('moment');
 var _ = require('lodash');
 var auth = require('../middleware/authorization');
+
 var Match = mongoose.model('Match');
 var User = mongoose.model('User');
 
@@ -24,6 +25,7 @@ module.exports = function (passport) {
             var hasNextPage = (pageIndex + 1) * 15 <= matchCount;
 
             matches = matches.map(function (match) {
+                match.is_replay_expired = match.isSteamReplayExpired();
                 return match.toJSON({ virtuals: true });
             });
             matches.forEach(function (match) {
@@ -36,7 +38,9 @@ module.exports = function (passport) {
             var viewData = {
                 matches: matches,
                 prevPage: pageNumber - 1,
-                nextPage: hasNextPage ? pageNumber + 1 : false
+                nextPage: hasNextPage ? pageNumber + 1 : false,
+                isAdmin: req.user.access_level >= auth.ACCESS_LEVELS.ADMIN,
+                csrfToken: req.csrfToken()
             };
             res.render('home', viewData);
         });

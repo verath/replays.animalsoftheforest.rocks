@@ -12,6 +12,9 @@
                     <th>Played</th>
                     <th>Players</th>
                     <th>Replay File</th>
+                    {{#if isAdmin}}
+                        <th>Actions</th>
+                    {{/if}}
                 {{else}}
                     <th>No matches found</th>
                 {{/if}}
@@ -33,10 +36,21 @@
                                  alt="{{this.steam_persona_name}}" title="{{this.steam_persona_name}}">
                         {{/each}}
                     </td>
-                    {{#if this.replay_url}}
-                        <td><a href="{{this.replay_url}}">Download</a></td>
-                    {{else}}
-                        <td>N/A ({{this.replay_fetch_status}})</td>
+                    <td>
+                        {{#if this.replay_url}}
+                            <a href="{{this.replay_url}}">Download</a>
+                        {{else}}
+                            N/A ({{this.replay_fetch_status}})
+                        {{/if}}
+                    </td>
+                    {{#if ../isAdmin}}
+                        <td>
+                            <form action="admin/queue_match" method="post">
+                                <input type="hidden" name="_csrf" value="{{../../csrfToken}}">
+                                <input type="hidden" name="matchId" value="{{this.id}}">
+                                <button class="btn btn-link" type="submit">Fetch</button>
+                            </form>
+                        </td>
                     {{/if}}
                 </tr>
             {{/each}}

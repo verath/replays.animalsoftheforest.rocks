@@ -2,6 +2,8 @@
 
 var express = require('express');
 var exphbs = require('express-handlebars');
+var bodyParser = require('body-parser');
+var csurf = require('csurf');
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 var flash = require('connect-flash');
@@ -26,6 +28,9 @@ module.exports = function (app, passport, mongoose) {
     }));
     app.set('view engine', 'handlebars');
 
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(bodyParser.json());
+
     // Session cookies support
     app.use(session({
         secret: constants.COOKIE_SECRET,
@@ -40,6 +45,9 @@ module.exports = function (app, passport, mongoose) {
 
     // flash messages
     app.use(flash());
+
+    // Anti-CSRF
+    app.use(csurf());
 
     // Passport and passport sessions for auth
     app.use(passport.initialize());

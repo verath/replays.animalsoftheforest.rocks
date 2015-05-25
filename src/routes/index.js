@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const moment = require('moment');
 const _ = require('lodash');
 const auth = require('../middleware/authorization');
+
 const Match = mongoose.model('Match');
 const User = mongoose.model('User');
 
@@ -25,7 +26,10 @@ module.exports = (passport) => {
         Promise.all([findUsers, findMatches, findMatchCount]).spread((users, matches, matchCount) => {
             const hasNextPage = (pageIndex + 1) * 15 <= matchCount;
 
-            matches = matches.map((match) => match.toJSON({virtuals: true}));
+            matches = matches.map((match) => {
+                match.is_replay_expired = match.isSteamReplayExpired();
+                return match.toJSON({virtuals: true})
+            });
             matches.forEach((match) => {
                 match.users = _.chain(match.steam_players).map((player) => {
                     return _.find(users, 'steam_id', player.account_id);
@@ -36,7 +40,9 @@ module.exports = (passport) => {
             const viewData = {
                 matches: matches,
                 prevPage: (pageNumber - 1),
-                nextPage: hasNextPage ? (pageNumber + 1) : false
+                nextPage: hasNextPage ? (pageNumber + 1) : false,
+                isAdmin: req.user.access_level >= auth.ACCESS_LEVELS.ADMIN,
+                csrfToken: req.csrfToken()
             };
             res.render('home', viewData);
         });
