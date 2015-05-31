@@ -63,7 +63,7 @@ function run() {
             })
         });
 
-        if(shouldAddMatchToReplayQueue(match)) {
+        if (shouldAddMatchToReplayQueue(match)) {
             match.replay_fetch_status = "Started";
         }
 
@@ -148,7 +148,7 @@ function run() {
     }
 
     Promise.resolve(Team.find({}).exec())
-        .each((team) => steamTeamIds.push(team))
+        .each((team) => steamTeamIds.push(team.steam_team_id))
         .then(() => Promise.resolve(User.find({}).exec()))
         .then(fetchMatchesForUsers)
         .catch((err) => {

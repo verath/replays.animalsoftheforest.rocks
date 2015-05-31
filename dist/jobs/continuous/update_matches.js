@@ -166,7 +166,7 @@ function run() {
     }
 
     Promise.resolve(Team.find({}).exec()).each(function (team) {
-        return steamTeamIds.push(team);
+        return steamTeamIds.push(team.steam_team_id);
     }).then(function () {
         return Promise.resolve(User.find({}).exec());
     }).then(fetchMatchesForUsers)['catch'](function (err) {
