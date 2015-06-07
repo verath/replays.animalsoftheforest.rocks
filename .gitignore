@@ -3,6 +3,9 @@ dist
 *-compiled.js
 *-compiled.js.map
 
+# Environment variables used by foreman
+.env
+
 # Logs
 logs
 *.log
