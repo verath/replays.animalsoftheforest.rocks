@@ -5,16 +5,17 @@ const csurf = require('csurf');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const flash = require('connect-flash');
+const compression = require('compression')
 
 const constants = require('./constants');
 
 module.exports = (app, passport, mongoose) => {
 
-    // Serve static files in /public in develop mode. In production this is done by Azure
-    if (process.env['NODE_ENV'] !== 'production') {
-        console.log('Not production, using express for serving static files.');
-        app.use(express.static(__dirname + '/../../public'));
-    }
+    // deflate, gzip compression
+    app.use(compression());
+
+    // Serve static files in /public
+    app.use(express.static(__dirname + '/../../public'));
 
     // View engine
     const viewDir = __dirname + '/../views/';

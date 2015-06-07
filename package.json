@@ -24,13 +24,17 @@
     "azure-storage": "^0.4.4",
     "bluebird": "^2.9.25",
     "body-parser": "^1.12.4",
+    "compression": "^1.4.4",
     "connect-flash": "^0.1.1",
     "connect-mongo": "^0.8.1",
     "csurf": "^1.8.2",
+    "del": "^1.1.1",
     "dota2": "git://github.com/yasp-dota/node-dota2.git#9baa0985ec85f5cbfba7f43433f7c853aaf3c28e",
     "express": "^4.12.3",
     "express-handlebars": "^2.0.1",
     "express-session": "^1.11.2",
+    "gulp": "^3.8.11",
+    "gulp-babel": "^5.1.0",
     "lodash": "^3.9.2",
     "moment": "^2.10.3",
     "mongoose": "^4.0.3",
@@ -38,9 +42,6 @@
     "passport-steam": "^0.1.5",
     "request": "^2.55.0",
     "request-promise": "^0.4.2",
-    "steam": "^0.6.8",
-    "del": "^1.1.1",
-    "gulp": "^3.8.11",
-    "gulp-babel": "^5.1.0"
+    "steam": "^0.6.8"
   }
 }
