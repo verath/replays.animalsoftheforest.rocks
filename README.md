@@ -1,6 +1,6 @@
 # replays.animalsoftheforest.rocks
 
-A node.js web app for fetching and storing dota2 replay files for longer periods of time. Built for hosting on Microsoft Azure.
+A node.js web app for fetching and storing dota2 replay files for longer periods of time.
 
 ## Installing
 ```
@@ -34,11 +34,6 @@ $ node dist/app.js
 * [Azure Storage](http://azure.microsoft.com/en-in/services/storage/) - Used both as a task queue for replay fetch requests, and as blob storage for the replays.
 * [node-steam](https://github.com/seishun/node-steam) + [yasp-dota's fork of node-dota2](https://github.com/yasp-dota/node-dota2) for connecting to and fetching data from dota.
 
-## Special Azure Directory Structure
-
-**./App_Data** - This folder is special to Azure and is used for [WebJobs](http://blog.amitapple.com/post/74215124623/deploy-azure-webjobs/). Within it are folders containing jobs that Azure automatically runs (`continuous/`) or that can be run manually (`triggered/`). Azure will consider each directory within these categories as a job, and will run the `run.*` file. For .js files this script is run in place (for other extensions, this script might be copied and run elsewhere in the filesystem).
-
-**./dist** - Azure does not like running build tools. As such, the compiled version of the src folder is also included in the repo.
 
 ## Inspiration
 [yasp-dota](https://github.com/yasp-dota/yasp) - Open Source Dota 2 Replay Parsing and Statistics. Much of the match details fetching required to get the replay url is based on what they have done with their "retreiver".
