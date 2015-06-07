@@ -7,7 +7,8 @@
   },
   "main": "app.js",
   "scripts": {
-    "start": "node dist/app.js"
+    "start": "node dist/app.js",
+    "postinstall": "gulp"
   },
   "repository": {
     "type": "git",
@@ -37,9 +38,7 @@
     "passport-steam": "^0.1.5",
     "request": "^2.55.0",
     "request-promise": "^0.4.2",
-    "steam": "^0.6.8"
-  },
-  "devDependencies": {
+    "steam": "^0.6.8",
     "del": "^1.1.1",
     "gulp": "^3.8.11",
     "gulp-babel": "^5.1.0"
