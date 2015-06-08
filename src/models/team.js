@@ -6,7 +6,7 @@ const teamSchema = new Schema({
     steam_name: String,
     steam_tag: String,
     steam_time_created: Number,
-    steam_rating: Number,
+    steam_rating: Schema.Types.Mixed, // Either mmr as a number, or "inactive"
     steam_logo: Number,
     steam_player_account_ids: [String],
     steam_admin_account_id: String
