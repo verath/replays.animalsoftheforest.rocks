@@ -7,17 +7,17 @@ const TEAM_INFO_METHOD_URL = "http://api.steampowered.com/IDOTA2Match_570/GetTea
 
 class UpdateTeams extends BackgroundJob {
 
-    _findAllTeams() {
-        const Team = this._dbConnection.model('Team');
+    findAllTeams() {
+        const Team = this.mongooseConnection.model('Team');
         const teamsPromise = Team.find({}).exec();
         return Promise.resolve(teamsPromise);
     }
 
-    _updateTeam(team) {
+    updateTeam(team) {
         console.log(`Updating team ${team.steam_name} (${team.steam_team_id})`);
 
         const params = {start_at_team_id: team.steam_team_id, teams_requested: 1};
-        return BackgroundJob._doSteamWebAPIRequest(TEAM_INFO_METHOD_URL, params).then((res) => {
+        return BackgroundJob.doSteamWebAPIRequest(TEAM_INFO_METHOD_URL, params).then((res) => {
             const teamData = res["result"]["teams"][0];
             team.steam_name = teamData["name"];
             team.steam_tag = teamData["tag"];
@@ -39,12 +39,12 @@ class UpdateTeams extends BackgroundJob {
         });
     }
 
-    _updateAllTeams() {
-        return this._findAllTeams().then((teams) => {
+    updateAllTeams() {
+        return this.findAllTeams().then((teams) => {
             if (teams != null) {
                 return teams.reduce((fetchPromise, team) => {
                     return fetchPromise
-                        .then(() => this._updateTeam(team))
+                        .then(() => this.updateTeam(team))
                         .delay(BackgroundJob.STEAM_API_REQUEST_DELAY);
                 }, Promise.resolve())
             }
@@ -52,8 +52,8 @@ class UpdateTeams extends BackgroundJob {
     }
 
     run() {
-        this._updateAllTeams().finally(() => {
-            this._dbConnection = null
+        this.updateAllTeams().finally(() => {
+            this.closeMongooseConnection();
         });
     }
 }

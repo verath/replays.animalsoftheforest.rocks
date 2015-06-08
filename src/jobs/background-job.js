@@ -11,7 +11,7 @@ const constants = require('../config/constants');
 class BackgroundJob {
 
     constructor() {
-        this._db = null;
+        this._mongooseConnection = null;
     }
 
     /**
@@ -33,7 +33,7 @@ class BackgroundJob {
         return connection;
     }
 
-    static _doSteamWebAPIRequest(URL, params) {
+    static doSteamWebAPIRequest(URL, params) {
         params.key = constants.STEAM_WEB_API_KEY;
         const requestPromise = request({uri: URL, qs: params, json: true});
         return requestPromise.catch(requestErrors.StatusCodeError, (err) => {
@@ -41,31 +41,24 @@ class BackgroundJob {
         });
     }
 
-    /**
-     * Returns a mongoose connection, creating it if necessary.
-     * @returns {Connection}
-     * @private
-     */
-    get _dbConnection() {
-        if (!this._db) {
-            this._db = BackgroundJob._createMongooseConnection();
+    openMongooseConnection() {
+        if (!this._mongooseConnection) {
+            this._mongooseConnection = BackgroundJob._createMongooseConnection();
         }
-        return this._db;
     }
 
-    /**
-     *
-     * @param {Connection} connection
-     * @private
-     */
-    set _dbConnection(connection) {
-        if(connection == null) {
-            this._db.close();
-            this._db = null;
-        } else {
-            throw new Error("Can not set _dbConnection to a new value!");
+    closeMongooseConnection() {
+        if (this._mongooseConnection) {
+            this._mongooseConnection.close();
+            this._mongooseConnection = null;
         }
     }
+
+    get mongooseConnection() {
+        this.openMongooseConnection();
+        return this._mongooseConnection;
+    }
+
 
     run() {
         throw new Error("#run must be implemented in subclass!");
