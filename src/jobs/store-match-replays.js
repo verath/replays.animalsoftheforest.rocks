@@ -8,8 +8,8 @@ const BackgroundJob = require('./background-job');
 
 const STEAM_ACC_ACCOUNT_NAME = process.env['STEAM_ACC_ACCOUNT_NAME'];
 const STEAM_ACC_PASSWORD = process.env['STEAM_ACC_PASSWORD'];
-const TIMEOUT_STEAM_CLIENT = 25000; // Timeout in ms for calls to the steam client
-const NUM_MESSAGES_PER_RUN = 3; // Number of queue message to process pre run
+const TIMEOUT_STEAM_CLIENT = 20000; // Timeout in ms for calls to the steam client
+const NUM_MESSAGES_PER_RUN = 4; // Number of queue message to process pre run
 
 class EmptyQueueError extends TypedError {
 }
