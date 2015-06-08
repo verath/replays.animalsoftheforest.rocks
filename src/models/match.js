@@ -74,7 +74,7 @@ matchSchema.methods = {
      * @returns {boolean} True if the replay is expired.
      */
     isSteamReplayExpired: function () {
-        const expiredThreshold = moment().subtract(7, 'days').unix();
+        const expiredThreshold = moment().subtract(7, 'days');
         const matchStartTime = moment.unix(this.steam_start_time);
         return !!matchStartTime.isBefore(expiredThreshold);
     },
