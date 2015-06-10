@@ -7,9 +7,7 @@ const PLAYER_SUMMARIES_METHOD_URL = "http://api.steampowered.com/ISteamUser/GetP
 class UpdateUsers extends BackgroundJob {
 
     findAllUsers() {
-        const User = this.mongooseConnection.model('User');
-        const usersPromise = User.find({}).exec();
-        return Promise.resolve(usersPromise)
+        return this.mongooseConnection.model('User').findAll();
     }
 
     updateUser(user) {

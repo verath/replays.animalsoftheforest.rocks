@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Promise = require('bluebird');
 const Schema = mongoose.Schema;
 
 const teamSchema = new Schema({
@@ -14,6 +15,19 @@ const teamSchema = new Schema({
 
 // Disable auto index as it has a big performance impact
 teamSchema.set('autoIndex', false);
+
+// Class methods on the Team model
+teamSchema.statics = {
+    /**
+     * Finds all teams. Also wraps the mongoose promise in a bluebird promise.
+     *
+     * @returns {Promise} A bluebird promise for all teams.
+     */
+    findAll: function () {
+        const teamsPromise = this.find({}).exec();
+        return Promise.resolve(teamsPromise);
+    }
+};
 
 module.exports = (connection) => {
     connection.model('Team', teamSchema);

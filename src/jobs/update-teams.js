@@ -8,9 +8,7 @@ const TEAM_INFO_METHOD_URL = "http://api.steampowered.com/IDOTA2Match_570/GetTea
 class UpdateTeams extends BackgroundJob {
 
     findAllTeams() {
-        const Team = this.mongooseConnection.model('Team');
-        const teamsPromise = Team.find({}).exec();
-        return Promise.resolve(teamsPromise);
+        return this.mongooseConnection.model('Team').findAll();
     }
 
     updateTeam(team) {
